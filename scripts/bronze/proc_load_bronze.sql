@@ -13,9 +13,14 @@ Usage examples :
 ==========================================================
 */
 
-CREATE PROCEDURE bronze.load_bronze AS
-BEGIN
-
+if object_id (N'bronzeload_bronze',N'P') is not null 
+begin 
+    DROP PROCEDURE bronze.load_bronze;
+end 
+go 
+CREATE PROCEDURE  bronze.load_bronze
+AS
+BEGIN    
     DECLARE
         @start_time DATETIME,
         @end_time DATETIME,
