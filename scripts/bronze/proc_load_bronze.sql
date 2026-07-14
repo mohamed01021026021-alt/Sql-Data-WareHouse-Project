@@ -1,112 +1,137 @@
 /*
-==========================================================
-stored procedure : load bronze layer (source-->bronze)
---------------------------------------------------
-script purpose :
-this stored procedursn loads data into the 'bronze' schema from external csv files.
-it uses the bulk insert command to loads data from csv to bronze tables.
-Parameters:
-    None.
-  _This stored proceduresdoesn't accept any parameters or return any values 
-Usage examples :
-   Exec bronze.load_bronze;
-==========================================================
+===========================================================
+Stored Procedure : Load Bronze Layer (Source → Bronze)
+===========================================================
+
+Purpose:
+- Load raw data from external CSV files into Bronze schema.
+- Acts as the staging layer before Silver transformations.
+
+Source: External CSV files
+Target: Bronze schema tables
+Parameters: None
+Returns: None
+
+Usage:
+    EXECUTE bronze.load_bronze;
+
+===========================================================
 */
 
-if object_id (N'bronzeload_bronze',N'P') is not null 
-begin 
+IF OBJECT_ID('bronze.load_bronze','P') IS NOT NULL
     DROP PROCEDURE bronze.load_bronze;
-end 
-go 
-CREATE PROCEDURE  bronze.load_bronze
-AS
-BEGIN    
-    DECLARE
+GO
+
+CREATE PROCEDURE bronze.load_bronze AS
+BEGIN
+    DECLARE 
         @start_time DATETIME,
         @end_time DATETIME,
         @batch_start_time DATETIME,
         @batch_end_time DATETIME;
 
     BEGIN TRY
-
         SET @batch_start_time = GETDATE();
+        PRINT '--- Starting Bronze Layer Load ---';
 
-        PRINT '------------------------------';
-        PRINT 'loading bronze layer';
-        PRINT '------------------------------';
-
+        -----------------------------------------------------------------------
+        -- Load CRM Customer Info
+        -----------------------------------------------------------------------
+        PRINT 'Loading bronze.crm_cust_info...';
         SET @start_time = GETDATE();
 
         BULK INSERT bronze.crm_cust_info
         FROM 'C:\Users\M2h\OneDrive\Desktop\data warehouse\cust_info.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            TABLOCK
-        );
+        WITH (FIRSTROW=2, FIELDTERMINATOR=',', TABLOCK);
+
+        SET @end_time = GETDATE();
+        PRINT 'bronze.crm_cust_info Loaded. Duration: ' 
+              + CAST(DATEDIFF(SECOND,@start_time,@end_time) AS NVARCHAR) + 's';
+
+        -----------------------------------------------------------------------
+        -- Load CRM Product Info
+        -----------------------------------------------------------------------
+        PRINT 'Loading bronze.crm_prd_info...';
+        SET @start_time = GETDATE();
 
         BULK INSERT bronze.crm_prd_info
         FROM 'C:\Users\M2h\OneDrive\Desktop\data warehouse\prd_info.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            TABLOCK
-        );
+        WITH (FIRSTROW=2, FIELDTERMINATOR=',', TABLOCK);
+
+        SET @end_time = GETDATE();
+        PRINT 'bronze.crm_prd_info Loaded. Duration: ' 
+              + CAST(DATEDIFF(SECOND,@start_time,@end_time) AS NVARCHAR) + 's';
+
+        -----------------------------------------------------------------------
+        -- Load CRM Sales Details
+        -----------------------------------------------------------------------
+        PRINT 'Loading bronze.crm_sales_details...';
+        SET @start_time = GETDATE();
 
         BULK INSERT bronze.crm_sales_details
         FROM 'C:\Users\M2h\OneDrive\Desktop\data warehouse\sales_details.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            TABLOCK
-        );
+        WITH (FIRSTROW=2, FIELDTERMINATOR=',', TABLOCK);
+
+        SET @end_time = GETDATE();
+        PRINT 'bronze.crm_sales_details Loaded. Duration: ' 
+              + CAST(DATEDIFF(SECOND,@start_time,@end_time) AS NVARCHAR) + 's';
+
+        -----------------------------------------------------------------------
+        -- Load ERP Customer Info
+        -----------------------------------------------------------------------
+        PRINT 'Loading bronze.erb_cust_az12...';
+        SET @start_time = GETDATE();
 
         BULK INSERT bronze.erb_cust_az12
         FROM 'C:\Users\M2h\OneDrive\Desktop\data warehouse\CUST_AZ12.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            TABLOCK
-        );
+        WITH (FIRSTROW=2, FIELDTERMINATOR=',', TABLOCK);
+
+        SET @end_time = GETDATE();
+        PRINT 'bronze.erb_cust_az12 Loaded. Duration: ' 
+              + CAST(DATEDIFF(SECOND,@start_time,@end_time) AS NVARCHAR) + 's';
+
+        -----------------------------------------------------------------------
+        -- Load ERP Location Info
+        -----------------------------------------------------------------------
+        PRINT 'Loading bronze.erb_loc_a101...';
+        SET @start_time = GETDATE();
 
         BULK INSERT bronze.erb_loc_a101
         FROM 'C:\Users\M2h\OneDrive\Desktop\data warehouse\LOC_A101.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            TABLOCK
-        );
+        WITH (FIRSTROW=2, FIELDTERMINATOR=',', TABLOCK);
+
+        SET @end_time = GETDATE();
+        PRINT 'bronze.erb_loc_a101 Loaded. Duration: ' 
+              + CAST(DATEDIFF(SECOND,@start_time,@end_time) AS NVARCHAR) + 's';
+
+        -----------------------------------------------------------------------
+        -- Load ERP Product Categories
+        -----------------------------------------------------------------------
+        PRINT 'Loading bronze.erb_px_cat_g1v2...';
+        SET @start_time = GETDATE();
 
         BULK INSERT bronze.erb_px_cat_g1v2
         FROM 'C:\Users\M2h\OneDrive\Desktop\data warehouse\PX_CAT_G1V2.csv'
-        WITH (
-            FIRSTROW = 2,
-            FIELDTERMINATOR = ',',
-            TABLOCK
-        );
+        WITH (FIRSTROW=2, FIELDTERMINATOR=',', TABLOCK);
 
         SET @end_time = GETDATE();
+        PRINT 'bronze.erb_px_cat_g1v2 Loaded. Duration: ' 
+              + CAST(DATEDIFF(SECOND,@start_time,@end_time) AS NVARCHAR) + 's';
 
-        PRINT '>>>load duration:'
-            + CAST(DATEDIFF(SECOND, @start_time, @end_time) AS NVARCHAR)
-            + ' seconds';
-
+        -----------------------------------------------------------------------
+        -- Total Execution Time
+        -----------------------------------------------------------------------
         SET @batch_end_time = GETDATE();
-
-        PRINT 'total load duration :'
-            + CAST(DATEDIFF(SECOND, @batch_start_time, @batch_end_time) AS NVARCHAR)
-            + ' seconds';
-
+        PRINT '--- Bronze Layer Load Completed ---';
+        PRINT 'Total Duration: ' 
+              + CAST(DATEDIFF(SECOND,@batch_start_time,@batch_end_time) AS NVARCHAR) + 's';
     END TRY
 
     BEGIN CATCH
-
-        PRINT '------------------------------';
-        PRINT 'errors occured';
-        PRINT 'error message ' + ERROR_MESSAGE();
-        PRINT 'error message ' + CAST(ERROR_NUMBER() AS NVARCHAR);
-        PRINT 'error message ' + CAST(ERROR_STATE() AS NVARCHAR);
-
+        PRINT '*** ERROR OCCURRED DURING BRONZE LOAD ***';
+        PRINT 'Error Number : ' + CAST(ERROR_NUMBER() AS NVARCHAR);
+        PRINT 'Error State  : ' + CAST(ERROR_STATE() AS NVARCHAR);
+        PRINT 'Error Message: ' + ERROR_MESSAGE();
     END CATCH
-
 END;
+GO
