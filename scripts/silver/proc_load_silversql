@@ -172,7 +172,7 @@ BEGIN
             CASE WHEN LTRIM(RTRIM(cntry))='DE' THEN 'Germany'
                  WHEN LTRIM(RTRIM(cntry)) IN ('US','USA') THEN 'United States'
                  WHEN LTRIM(RTRIM(cntry))='' OR cntry IS NULL THEN 'Unknown'
-                 ELSE 'Unknown' END
+                 ELSE  cntry END as cntry
         FROM bronze.erb_loc_a101;
 
         SET @end_time = GETDATE();
